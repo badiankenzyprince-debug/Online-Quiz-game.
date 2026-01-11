@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>English Improvement Quiz</title>
+
+<style>
+    body {
+        font-family: 'Segoe UI', sans-serif;
+        background: linear-gradient(135deg, #2b5876, #4e4376);
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #fff;
+    }
+
+    .quiz-box {
+        background: #1e1e2f;
+        width: 380px;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        animation: fadeIn 0.6s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.9); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 15px;
+    }
+
+    .progress {
+        font-size: 14px;
+        text-align: right;
+        opacity: 0.7;
+    }
+
+    button {
+        width: 100%;
+        padding: 12px;
+        margin: 8px 0;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    .difficulty button {
+        background: #6c5ce7;
+        color: #fff;
+    }
+
+    .difficulty button:hover {
+        background: #a29bfe;
+        transform: translateY(-2px);
+    }
+
+    .option {
+        background: #2d2d44;
+        color: #fff;
+    }
+
+    .option:hover {
+        background: #3f3f66;
+        transform: scale(1.03);
+    }
+
+    .correct {
+        background: #2ecc71 !important;
+        animation: pop 0.3s;
+    }
+
+    .wrong {
+        background: #e74c3c !important;
+        animation: shake 0.3s;
+    }
+
+    @keyframes shake {
+        0% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        50% { transform: translateX(5px); }
+        75% { transform: translateX(-5px); }
+        100% { transform: translateX(0); }
+    }
+
+    @keyframes pop {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+
+    .hide {
+        display: none;
+    }
+
+    .next-btn {
+        background: #00cec9;
+        color: #000;
+        margin-top: 10px;
+    }
+</style>
+</head>
+<body>
+
+<div class="quiz-box">
+    <h2 id="title">English Improvement Quiz</h2>
+
+    <div class="difficulty" id="difficulty">
+        <button onclick="startQuiz('easy')">Easy</button>
+        <button onclick="startQuiz('medium')">Medium</button>
+        <button onclick="startQuiz('hard')">Hard</button>
+    </div>
+
+    <div id="quiz" class="hide">
+        <div class="progress" id="progress"></div>
+        <p id="question"></p>
+        <div id="options"></div>
+        <button class="next-btn hide" id="nextBtn" onclick="nextQuestion()">Next</button>
+    </div>
+
+    <div id="result" class="hide">
+        <h2>Your Result</h2>
+        <p id="score"></p>
+        <button onclick="location.reload()">Restart</button>
+    </div>
+</div>
+
+<script>
+const quizData = {
+    easy: [
+        {
+            q: "Choose the correct sentence:",
+            o: [
+                "She go to school every day.",
+                "She goes to school every day.",
+                "She going to school every day."
+            ],
+            a: 1
+        },
+        {
+            q: "What is the opposite of 'happy'?",
+            o: ["Sad", "Fast", "Big"],
+            a: 0
+        }
+    ],
+    medium: [
+        {
+            q: "Fill in the blank: He has lived here _____ 2018.",
+            o: ["since", "for", "from"],
+            a: 0
+        },
+        {
+            q: "Choose the correct word: This task is _____ than the last one.",
+            o: ["more easy", "easiest", "easier"],
+            a: 2
+        }
+    ],
+    hard: [
+        {
+            q: "Which sentence is grammatically correct?",
+            o: [
+                "Had I knew about the meeting, I would attend.",
+                "Had I known about the meeting, I would have attended.",
+                "If I would know about the meeting, I had attended."
+            ],
+            a: 1
+        },
+        {
+            q: "What does the word 'ubiquitous' most nearly mean?",
+            o: [
+                "Rare and valuable",
+                "Present everywhere",
+                "Difficult to understand"
+            ],
+            a: 1
+        },
+        {
+            q: "Choose the best option: She spoke so _____ that everyone understood her.",
+            o: ["clear", "clearly", "clearness"],
+            a: 1
+        }
+    ]
+};
+
+let questions = [];
+let index = 0;
+let score = 0;
+let answered = false;
+
+function startQuiz(level) {
+    questions = quizData[level];
+    document.getElementById("difficulty").classList.add("hide");
+    document.getElementById("quiz").classList.remove("hide");
+    loadQuestion();
+}
+
+function loadQuestion() {
+    answered = false;
+    document.getElementById("nextBtn").classList.add("hide");
+
+    const q = questions[index];
+    document.getElementById("question").innerText = q.q;
+    document.getElementById("progress").innerText =
+        `Question ${index + 1} / ${questions.length}`;
+
+    const optionsDiv = document.getElementById("options");
+    optionsDiv.innerHTML = "";
+
+    q.o.forEach((option, i) => {
+        const btn = document.createElement("button");
+        btn.innerText = option;
+        btn.className = "option";
+        btn.onclick = () => checkAnswer(btn, i);
+        optionsDiv.appendChild(btn);
+    });
+}
+
+function checkAnswer(button, selected) {
+    if (answered) return;
+    answered = true;
+
+    const correct = questions[index].a;
+    const buttons = document.querySelectorAll(".option");
+
+    buttons.forEach((btn, i) => {
+        if (i === correct) btn.classList.add("correct");
+        if (i === selected && i !== correct) btn.classList.add("wrong");
+        btn.disabled = true;
+    });
+
+    if (selected === correct) score++;
+
+    document.getElementById("nextBtn").classList.remove("hide");
+}
+
+function nextQuestion() {
+    index++;
+    if (index < questions.length) {
+        loadQuestion();
+    } else {
+        showResult();
+    }
+}
+
+function showResult() {
+    document.getElementById("quiz").classList.add("hide");
+    document.getElementById("result").classList.remove("hide");
+    document.getElementById("score").innerText =
+        `${score} / ${questions.length}`;
+}
+</script>
+
+</body>
+</html>
